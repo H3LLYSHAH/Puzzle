@@ -6,50 +6,42 @@
 <title>Live Puzzle Game</title>
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-  :root {
-    --bg: #0a0a0a; --surface: #111; --border: #1e1e1e;
-    --text: #f0f0f0; --muted: #555; --accent: #39ff14;
-    --accent-dim: rgba(57,255,20,0.10);
-  }
-  body { background: var(--bg); color: var(--text); font-family: 'Space Grotesk', 'Segoe UI', sans-serif; min-height: 100vh; display: flex; flex-direction: column; align-items: center; }
-  header { width: 100%; max-width: 960px; padding: 28px 16px 20px; display: flex; align-items: center; gap: 14px; border-bottom: 1px solid var(--border); margin-bottom: 32px; }
-  .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--accent); box-shadow: 0 0 10px var(--accent); flex-shrink: 0; }
-  h1 { font-family: 'Space Mono', monospace; font-size: clamp(16px, 3.5vw, 22px); font-weight: 700; letter-spacing: -0.5px; }
-  .subtitle { margin-left: auto; font-size: 12px; color: var(--muted); font-family: 'Space Mono', monospace; letter-spacing: 0.4px; }
-  main { width: 100%; max-width: 960px; padding: 0 16px 60px; display: flex; flex-direction: column; align-items: center; gap: 20px; }
-  .canvas-wrap { position: relative; width: 100%; max-width: 640px; aspect-ratio: 4/3; border: 1.5px solid var(--border); border-radius: 4px; overflow: hidden; background: #000; }
-  #videoEl { display: none; }
-  #overlayCanvas { position: absolute; inset: 0; width: 100%; height: 100%; cursor: none; }
-  .status-bar { width: 100%; max-width: 640px; display: flex; align-items: center; gap: 10px; font-family: 'Space Mono', monospace; font-size: 12px; color: var(--muted); min-height: 28px; }
-  .status-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--muted); flex-shrink: 0; transition: background 0.3s; }
-  .status-dot.active { background: var(--accent); box-shadow: 0 0 8px var(--accent); }
-  .controls { width: 100%; max-width: 640px; display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
-  .grid-label { font-size: 11px; color: var(--muted); font-family: 'Space Mono', monospace; letter-spacing: 0.5px; }
-  .grid-btn { width: 36px; height: 36px; border: 1.5px solid var(--border); background: transparent; color: var(--text); font-family: 'Space Mono', monospace; font-size: 13px; cursor: pointer; border-radius: 2px; transition: all 0.15s; }
-  .grid-btn:hover { border-color: var(--accent); color: var(--accent); }
-  .grid-btn.active { border-color: var(--accent); background: var(--accent-dim); color: var(--accent); }
-  .reset-btn { margin-left: auto; padding: 0 18px; height: 36px; background: transparent; color: var(--muted); border: 1px solid var(--border); font-size: 12px; cursor: pointer; border-radius: 2px; transition: all 0.15s; }
-  .reset-btn:hover { border-color: var(--accent); color: var(--accent); }
-  .instructions { width: 100%; max-width: 640px; display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
-  .step { border: 1px solid var(--border); border-radius: 3px; padding: 14px 12px; display: flex; flex-direction: column; gap: 6px; }
-  .step-num { font-family: 'Space Mono', monospace; font-size: 10px; color: var(--accent); letter-spacing: 1px; }
-  .step-title { font-size: 13px; font-weight: 600; }
-  .step-desc { font-size: 11px; color: var(--muted); line-height: 1.5; }
-  #solvedOverlay { display: none; position: absolute; inset: 0; background: rgba(0,0,0,0.88); align-items: center; justify-content: center; flex-direction: column; gap: 14px; z-index: 10; animation: fadeIn 0.4s ease; }
-  #solvedOverlay.show { display: flex; }
-  @keyframes fadeIn { from { opacity: 0 } to { opacity: 1 } }
-  .solved-trophy { font-size: 48px; animation: pop 0.5s cubic-bezier(.36,.07,.19,.97); }
-  @keyframes pop { 0%{transform:scale(0)} 70%{transform:scale(1.15)} 100%{transform:scale(1)} }
-  .solved-title { font-family: 'Space Mono', monospace; font-size: 20px; color: var(--accent); text-shadow: 0 0 20px var(--accent); }
-  .solved-moves { font-size: 13px; color: var(--muted); }
-  .play-again { padding: 10px 28px; background: var(--accent); color: #000; border: none; font-family: 'Space Mono', monospace; font-size: 13px; font-weight: 700; cursor: pointer; border-radius: 2px; margin-top: 6px; transition: opacity 0.15s; }
-  .play-again:hover { opacity: 0.85; }
-  #loadingMsg { position: absolute; inset: 0; background: #000; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px; z-index: 20; font-family: 'Space Mono', monospace; font-size: 13px; color: var(--muted); }
-  .spinner { width: 28px; height: 28px; border: 2px solid var(--border); border-top-color: var(--accent); border-radius: 50%; animation: spin 0.8s linear infinite; }
-  @keyframes spin { to { transform: rotate(360deg); } }
+  :root { --bg:#0a0a0a;--border:#1e1e1e;--text:#f0f0f0;--muted:#555;--accent:#39ff14;--accent-dim:rgba(57,255,20,0.10); }
+  body { background:var(--bg);color:var(--text);font-family:'Segoe UI',sans-serif;min-height:100vh;display:flex;flex-direction:column;align-items:center; }
+  header { width:100%;max-width:960px;padding:24px 16px 18px;display:flex;align-items:center;gap:14px;border-bottom:1px solid var(--border);margin-bottom:28px; }
+  .dot { width:8px;height:8px;border-radius:50%;background:var(--accent);box-shadow:0 0 10px var(--accent);flex-shrink:0; }
+  h1 { font-family:monospace;font-size:clamp(16px,3.5vw,22px);font-weight:700;letter-spacing:-0.5px; }
+  .subtitle { margin-left:auto;font-size:12px;color:var(--muted);font-family:monospace; }
+  main { width:100%;max-width:960px;padding:0 16px 60px;display:flex;flex-direction:column;align-items:center;gap:18px; }
+  .canvas-wrap { position:relative;width:100%;max-width:640px;aspect-ratio:4/3;border:1.5px solid var(--border);border-radius:4px;overflow:hidden;background:#000; }
+  #videoEl { display:none; }
+  #overlayCanvas { position:absolute;inset:0;width:100%;height:100%;cursor:none; }
+  .status-bar { width:100%;max-width:640px;display:flex;align-items:center;gap:10px;font-family:monospace;font-size:12px;color:var(--muted);min-height:26px; }
+  .sdot { width:6px;height:6px;border-radius:50%;background:var(--muted);flex-shrink:0;transition:background 0.3s; }
+  .sdot.on { background:var(--accent);box-shadow:0 0 8px var(--accent); }
+  .controls { width:100%;max-width:640px;display:flex;align-items:center;gap:10px;flex-wrap:wrap; }
+  .glabel { font-size:11px;color:var(--muted);font-family:monospace;letter-spacing:0.5px; }
+  .gbtn { width:36px;height:36px;border:1.5px solid var(--border);background:transparent;color:var(--text);font-family:monospace;font-size:13px;cursor:pointer;border-radius:2px;transition:all 0.15s; }
+  .gbtn:hover,.gbtn.active { border-color:var(--accent);color:var(--accent); }
+  .gbtn.active { background:var(--accent-dim); }
+  .rbtn { margin-left:auto;padding:0 18px;height:36px;background:transparent;color:var(--muted);border:1px solid var(--border);font-size:12px;cursor:pointer;border-radius:2px;transition:all 0.15s; }
+  .rbtn:hover { border-color:var(--accent);color:var(--accent); }
+  .steps { width:100%;max-width:640px;display:grid;grid-template-columns:repeat(3,1fr);gap:10px; }
+  .step { border:1px solid var(--border);border-radius:3px;padding:12px;display:flex;flex-direction:column;gap:5px; }
+  .snum { font-family:monospace;font-size:10px;color:var(--accent);letter-spacing:1px; }
+  .stitle { font-size:13px;font-weight:600; }
+  .sdesc { font-size:11px;color:var(--muted);line-height:1.5; }
+  #solved { display:none;position:absolute;inset:0;background:rgba(0,0,0,0.88);align-items:center;justify-content:center;flex-direction:column;gap:14px;z-index:10; }
+  #solved.show { display:flex; }
+  .trophy { font-size:48px; }
+  .stitle2 { font-family:monospace;font-size:20px;color:var(--accent);text-shadow:0 0 20px var(--accent); }
+  .smoves { font-size:13px;color:var(--muted); }
+  .pagain { padding:10px 28px;background:var(--accent);color:#000;border:none;font-family:monospace;font-size:13px;font-weight:700;cursor:pointer;border-radius:2px;margin-top:6px; }
+  #loading { position:absolute;inset:0;background:#000;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;z-index:20;font-family:monospace;font-size:13px;color:var(--muted); }
+  .spin { width:28px;height:28px;border:2px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin 0.8s linear infinite; }
+  @keyframes spin{to{transform:rotate(360deg)}}
+  #tip { position:absolute;bottom:8px;left:0;right:0;text-align:center;font-family:monospace;font-size:11px;color:rgba(57,255,20,0.6);pointer-events:none;z-index:5; }
 </style>
-<link rel="preconnect" href="https://fonts.googleapis.com"/>
-<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet"/>
 </head>
 <body>
 <header>
@@ -61,316 +53,236 @@
   <div class="canvas-wrap">
     <video id="videoEl" playsinline></video>
     <canvas id="overlayCanvas"></canvas>
-    <div id="solvedOverlay">
-      <div class="solved-trophy">🏆</div>
-      <div class="solved-title">PUZZLE COMPLETE</div>
-      <div class="solved-moves" id="solvedMoves"></div>
-      <button class="play-again" onclick="resetPuzzle()">PLAY AGAIN</button>
+    <div id="solved">
+      <div class="trophy">🏆</div>
+      <div class="stitle2">PUZZLE COMPLETE</div>
+      <div class="smoves" id="smoves"></div>
+      <button class="pagain" onclick="resetPuzzle()">PLAY AGAIN</button>
     </div>
-    <div id="loadingMsg">
-      <div class="spinner"></div>
-      <span id="loadingText">Starting camera...</span>
+    <div id="loading">
+      <div class="spin"></div>
+      <span id="ltxt">Starting camera...</span>
     </div>
+    <div id="tip"></div>
   </div>
   <div class="status-bar">
-    <div class="status-dot" id="statusDot"></div>
-    <span id="statusText">Initializing...</span>
-    <span id="movesDisplay" style="font-family:'Space Mono',monospace;color:var(--text);"></span>
+    <div class="sdot" id="sdot"></div>
+    <span id="stxt">Initializing...</span>
+    <span id="moves" style="font-family:monospace;color:var(--text);margin-left:auto;"></span>
   </div>
   <div class="controls">
-    <span class="grid-label">GRID</span>
-    <button class="grid-btn active" onclick="setGrid(3,this)">3</button>
-    <button class="grid-btn" onclick="setGrid(4,this)">4</button>
-    <button class="grid-btn" onclick="setGrid(5,this)">5</button>
-    <button class="reset-btn" onclick="resetPuzzle()">↺ Reset</button>
+    <span class="glabel">GRID</span>
+    <button class="gbtn active" onclick="setGrid(3,this)">3</button>
+    <button class="gbtn" onclick="setGrid(4,this)">4</button>
+    <button class="gbtn" onclick="setGrid(5,this)">5</button>
+    <button class="rbtn" onclick="resetPuzzle()">↺ Reset</button>
   </div>
-  <div class="instructions">
-    <div class="step">
-      <span class="step-num">01 — FRAME</span>
-      <div class="step-title">Show both hands</div>
-      <div class="step-desc">Hold both hands up to frame the area you want to puzzl-ify.</div>
-    </div>
-    <div class="step">
-      <span class="step-num">02 — CAPTURE</span>
-      <div class="step-title">Pinch to capture</div>
-      <div class="step-desc">Bring index finger and thumb together to snap the framed image.</div>
-    </div>
-    <div class="step">
-      <span class="step-num">03 — SOLVE</span>
-      <div class="step-title">Drag to swap</div>
-      <div class="step-desc">Pinch a piece to grab it, move your hand, open to drop and swap.</div>
-    </div>
+  <div class="steps">
+    <div class="step"><span class="snum">01 — FRAME</span><div class="stitle">Show both hands</div><div class="sdesc">Hold both hands up to frame the area you want to capture.</div></div>
+    <div class="step"><span class="snum">02 — CAPTURE</span><div class="stitle">Pinch to capture</div><div class="sdesc">Touch thumb to index finger to snap the framed image into a puzzle.</div></div>
+    <div class="step"><span class="snum">03 — SOLVE</span><div class="stitle">Drag to swap</div><div class="sdesc">Pinch over a piece to grab it, move hand, open fingers to drop.</div></div>
   </div>
 </main>
 
-<!-- TensorFlow.js + HandPose — loads fast, no WASM download issues -->
-<script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.17.0/dist/tf.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/hand-pose-detection@2.0.1/dist/hand-pose-detection.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands@0.4.1646424915/hands.js" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils@0.3.1620248257/camera_utils.js" crossorigin="anonymous"></script>
 
 <script>
-const video = document.getElementById('videoEl');
-const canvas = document.getElementById('overlayCanvas');
-const ctx = canvas.getContext('2d');
-const loadingMsg = document.getElementById('loadingMsg');
-const loadingText = document.getElementById('loadingText');
-const statusDot = document.getElementById('statusDot');
-const statusTxt = document.getElementById('statusText');
-const movesDisplay = document.getElementById('movesDisplay');
-const solvedOverlay = document.getElementById('solvedOverlay');
-const solvedMoves = document.getElementById('solvedMoves');
+const video   = document.getElementById('videoEl');
+const canvas  = document.getElementById('overlayCanvas');
+const ctx     = canvas.getContext('2d');
+const loading = document.getElementById('loading');
+const ltxt    = document.getElementById('ltxt');
+const sdot    = document.getElementById('sdot');
+const stxt    = document.getElementById('stxt');
+const movesEl = document.getElementById('moves');
+const solved  = document.getElementById('solved');
+const smoves  = document.getElementById('smoves');
+const tip     = document.getElementById('tip');
 
-let gridSize = 3;
-let phase = 'capture';
-let capturedImage = null;
-let pieces = [];
-let order = [];
-let moves = 0;
-let detector = null;
-let landmarks = []; // array of hands, each = 21 keypoints {x,y}
-let dragging = false;
-let dragPos = null;
-let pinchCooldown = 0;
-let animFrame = null;
-
+let gridSize = 3, phase = 'capture';
+let capturedImage = null, pieces = [], order = [], moveCount = 0;
+let lmData = [];  // [{x,y}] per hand
+let dragging = false, dragPos = null, cooldown = 0;
 let CW = 640, CH = 480;
+
 function resize() {
-  const wrap = canvas.parentElement;
-  CW = wrap.clientWidth; CH = wrap.clientHeight;
+  const w = canvas.parentElement;
+  CW = w.clientWidth; CH = w.clientHeight;
   canvas.width = CW; canvas.height = CH;
 }
-resize();
-window.addEventListener('resize', resize);
+resize(); window.addEventListener('resize', resize);
 
-window.setGrid = function(n, btn) {
+window.setGrid = (n, btn) => {
   gridSize = n;
-  document.querySelectorAll('.grid-btn').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('.gbtn').forEach(b => b.classList.remove('active'));
   btn.classList.add('active');
   if (phase === 'solve') resetPuzzle();
 };
 
-window.resetPuzzle = function() {
-  solvedOverlay.classList.remove('show');
-  if (capturedImage) { buildPuzzle(capturedImage); }
-  else { phase = 'capture'; pieces = []; order = []; moves = 0; updateStatus(); }
+window.resetPuzzle = () => {
+  solved.classList.remove('show');
+  if (capturedImage) buildPuzzle(capturedImage);
+  else { phase='capture'; pieces=[]; order=[]; moveCount=0; updateUI(); }
 };
 
 function buildPuzzle(img) {
-  capturedImage = img;
-  phase = 'solve'; moves = 0; movesDisplay.textContent = 'moves: 0';
-  const n = gridSize, pw = img.width / n, ph = img.height / n;
+  capturedImage = img; phase = 'solve'; moveCount = 0; movesEl.textContent = 'moves: 0';
+  const n=gridSize, pw=img.width/n, ph=img.height/n;
   pieces = [];
-  for (let r = 0; r < n; r++) {
-    for (let c = 0; c < n; c++) {
-      const oc = document.createElement('canvas');
-      oc.width = pw; oc.height = ph;
-      oc.getContext('2d').drawImage(img, c*pw, r*ph, pw, ph, 0, 0, pw, ph);
-      pieces.push(oc);
-    }
+  for (let r=0;r<n;r++) for (let c=0;c<n;c++) {
+    const oc=document.createElement('canvas'); oc.width=pw; oc.height=ph;
+    oc.getContext('2d').drawImage(img,c*pw,r*ph,pw,ph,0,0,pw,ph);
+    pieces.push(oc);
   }
-  order = pieces.map((_,i) => i);
-  for (let i = order.length-1; i > 0; i--) {
-    const j = Math.floor(Math.random()*(i+1));
-    [order[i],order[j]] = [order[j],order[i]];
-  }
-  dragging = false; dragPos = null;
-  updateStatus();
+  order = pieces.map((_,i)=>i);
+  for (let i=order.length-1;i>0;i--) { const j=Math.floor(Math.random()*(i+1)); [order[i],order[j]]=[order[j],order[i]]; }
+  dragging=false; dragPos=null;
+  updateUI();
 }
 
-function updateStatus() {
-  statusDot.classList.toggle('active', phase === 'solve');
-  if (phase === 'capture') {
-    statusTxt.textContent = 'Show both hands → frame area → pinch to capture';
-    movesDisplay.textContent = '';
-  } else {
-    statusTxt.textContent = 'Pinch to grab a piece · open hand to drop';
-  }
+function updateUI() {
+  sdot.classList.toggle('on', phase==='solve');
+  stxt.textContent = phase==='capture'
+    ? 'Show both hands → frame area → pinch to capture'
+    : 'Pinch to grab a piece · open hand to drop';
+  if (phase==='capture') movesEl.textContent='';
 }
 
 function checkSolved() {
-  if (order.every((v,i) => v === i)) {
-    solvedMoves.textContent = `Solved in ${moves} moves`;
-    solvedOverlay.classList.add('show');
+  if (order.every((v,i)=>v===i)) {
+    smoves.textContent = `Solved in ${moveCount} moves`;
+    solved.classList.add('show');
   }
 }
 
-function isPinched(lm) {
-  const t = lm[4], i = lm[8];
-  return Math.hypot(t.x - i.x, t.y - i.y) < 40; // pixel distance
+// Pinch = thumb tip (4) close to index tip (8)
+function pinched(lm) {
+  return Math.hypot(lm[4].x-lm[8].x, lm[4].y-lm[8].y) < 35;
 }
 
-// ── Main loop ──
-async function loop() {
-  if (!detector) { animFrame = requestAnimationFrame(loop); return; }
+// ── MediaPipe Hands ──
+const hands = new Hands({ locateFile: f => `https://cdn.jsdelivr.net/npm/@mediapipe/hands@0.4.1646424915/${f}` });
+hands.setOptions({ maxNumHands:2, modelComplexity:1, minDetectionConfidence:0.7, minTrackingConfidence:0.6 });
+
+hands.onResults(res => {
   resize();
-  ctx.save();
-  ctx.translate(CW, 0); ctx.scale(-1, 1);
-  ctx.drawImage(video, 0, 0, CW, CH);
+  // Draw mirrored camera
+  ctx.save(); ctx.translate(CW,0); ctx.scale(-1,1);
+  ctx.drawImage(res.image,0,0,CW,CH);
   ctx.restore();
 
-  try {
-    const hands = await detector.estimateHands(video, { flipHorizontal: true });
-    landmarks = hands.map(h => h.keypoints);
-  } catch(e) { landmarks = []; }
+  // Convert normalized → pixel, mirror x
+  lmData = (res.multiHandLandmarks||[]).map(hand =>
+    hand.map(p => ({ x:(1-p.x)*CW, y:p.y*CH }))
+  );
 
-  if (pinchCooldown > 0) pinchCooldown--;
+  if (cooldown>0) cooldown--;
+  phase==='capture' ? doCapture() : doSolve();
+});
 
-  if (phase === 'capture') renderCapture();
-  else renderSolve();
+function doCapture() {
+  const A='#39ff14';
+  for (const lm of lmData) drawSkel(lm, A);
 
-  animFrame = requestAnimationFrame(loop);
-}
+  if (lmData.length >= 2) {
+    tip.textContent = '';
+    const all = lmData.flat();
+    const xs=all.map(p=>p.x), ys=all.map(p=>p.y);
+    const rx=Math.min(...xs), ry=Math.min(...ys);
+    const rw=Math.max(...xs)-rx, rh=Math.max(...ys)-ry;
 
-function renderCapture() {
-  const ACCENT = '#39ff14';
-  for (const lm of landmarks) drawSkeleton(lm, ACCENT);
+    ctx.strokeStyle='#b4ff6e'; ctx.lineWidth=2;
+    ctx.setLineDash([6,4]); ctx.strokeRect(rx,ry,rw,rh); ctx.setLineDash([]);
+    ctx.fillStyle='#b4ff6e'; ctx.font='bold 12px monospace';
+    ctx.fillText('PINCH TO CAPTURE', rx+6, Math.max(ry-6,14));
 
-  if (landmarks.length >= 2) {
-    const h0 = landmarks[0], h1 = landmarks[1];
-    const allPts = [...h0, ...h1];
-    const xs = allPts.map(p => p.x), ys = allPts.map(p => p.y);
-    const rx = Math.min(...xs), ry = Math.min(...ys);
-    const rw = Math.max(...xs) - rx, rh = Math.max(...ys) - ry;
-
-    ctx.strokeStyle = '#b4ff6e'; ctx.lineWidth = 2;
-    ctx.setLineDash([6,4]); ctx.strokeRect(rx, ry, rw, rh); ctx.setLineDash([]);
-    ctx.fillStyle = '#b4ff6e'; ctx.font = '600 12px Space Grotesk,sans-serif';
-    ctx.fillText('PINCH TO CAPTURE', rx+6, Math.max(ry-8, 16));
-
-    const pinched = landmarks.some(lm => isPinched(lm));
-    if (pinched && pinchCooldown === 0 && rw > 20 && rh > 20) {
-      const cap = document.createElement('canvas');
-      cap.width = rw; cap.height = rh;
-      cap.getContext('2d').drawImage(canvas, rx, ry, rw, rh, 0, 0, rw, rh);
-      buildPuzzle(cap);
-      pinchCooldown = 40;
+    if (lmData.some(lm=>pinched(lm)) && cooldown===0 && rw>30 && rh>30) {
+      const cap=document.createElement('canvas'); cap.width=rw; cap.height=rh;
+      cap.getContext('2d').drawImage(canvas,rx,ry,rw,rh,0,0,rw,rh);
+      buildPuzzle(cap); cooldown=40;
     }
   } else {
-    ctx.fillStyle = 'rgba(57,255,20,0.7)';
-    ctx.font = '700 13px Space Mono,monospace';
-    ctx.textAlign = 'center';
-    ctx.fillText('SHOW BOTH HANDS TO FRAME', CW/2, CH-20);
-    ctx.textAlign = 'left';
+    tip.textContent = lmData.length===1 ? 'Show your OTHER hand too' : 'Show BOTH hands to frame';
   }
 }
 
-function renderSolve() {
-  const n = gridSize, pw = CW/n, ph = CH/n;
-  const ACCENT = '#39ff14';
+function doSolve() {
+  const n=gridSize, pw=CW/n, ph=CH/n, A='#39ff14';
 
-  // Draw pieces
-  for (let pos = 0; pos < n*n; pos++) {
-    const col = pos%n, row = Math.floor(pos/n);
-    const x = col*pw, y = row*ph;
-    if (dragging && dragPos === pos) { ctx.globalAlpha = 0.3; }
-    ctx.drawImage(pieces[order[pos]], x, y, pw, ph);
-    ctx.globalAlpha = 1;
-    ctx.strokeStyle = '#1e1e1e'; ctx.lineWidth = 1.5;
-    ctx.strokeRect(x, y, pw, ph);
+  for (let pos=0;pos<n*n;pos++) {
+    const col=pos%n, row=Math.floor(pos/n), x=col*pw, y=row*ph;
+    if (dragging && dragPos===pos) ctx.globalAlpha=0.25;
+    ctx.drawImage(pieces[order[pos]],x,y,pw,ph);
+    ctx.globalAlpha=1;
+    ctx.strokeStyle='#222'; ctx.lineWidth=1.5; ctx.strokeRect(x,y,pw,ph);
   }
 
-  // Process hands
-  for (const lm of landmarks) {
-    const pinched = isPinched(lm);
-    const tip = lm[8]; // index finger tip
-    const ix = tip.x, iy = tip.y;
+  if (lmData.length===0) tip.textContent='Show your hand to play';
+  else tip.textContent='';
 
-    if (dragging && dragPos !== null) {
-      if (pinched) {
-        // Draw floating piece at hand
-        ctx.save();
-        ctx.shadowColor = ACCENT; ctx.shadowBlur = 18;
-        ctx.globalAlpha = 0.92;
-        ctx.drawImage(pieces[order[dragPos]], ix-pw/2, iy-ph/2, pw, ph);
-        ctx.globalAlpha = 1;
-        ctx.strokeStyle = ACCENT; ctx.lineWidth = 2;
-        ctx.strokeRect(ix-pw/2, iy-ph/2, pw, ph);
-        ctx.restore();
-      } else if (pinchCooldown === 0) {
-        // Drop
-        const dc = Math.floor(ix/pw), dr = Math.floor(iy/ph);
-        const dp = dr*n+dc;
-        if (dp >= 0 && dp < n*n && dp !== dragPos) {
-          [order[dragPos], order[dp]] = [order[dp], order[dragPos]];
-          moves++; movesDisplay.textContent = `moves: ${moves}`;
-          checkSolved();
+  for (const lm of lmData) {
+    const p=pinched(lm), ix=lm[8].x, iy=lm[8].y;
+
+    if (dragging && dragPos!==null) {
+      if (p) {
+        ctx.save(); ctx.shadowColor=A; ctx.shadowBlur=20; ctx.globalAlpha=0.93;
+        ctx.drawImage(pieces[order[dragPos]],ix-pw/2,iy-ph/2,pw,ph);
+        ctx.globalAlpha=1; ctx.strokeStyle=A; ctx.lineWidth=2.5;
+        ctx.strokeRect(ix-pw/2,iy-ph/2,pw,ph); ctx.restore();
+      } else if (cooldown===0) {
+        const dc=Math.floor(ix/pw), dr=Math.floor(iy/ph), dp=dr*n+dc;
+        if (dp>=0&&dp<n*n&&dp!==dragPos) {
+          [order[dragPos],order[dp]]=[order[dp],order[dragPos]];
+          moveCount++; movesEl.textContent=`moves: ${moveCount}`; checkSolved();
         }
-        dragging = false; dragPos = null; pinchCooldown = 20;
+        dragging=false; dragPos=null; cooldown=18;
       }
     } else {
-      if (pinched && !dragging && pinchCooldown === 0) {
-        const col = Math.floor(ix/pw), row = Math.floor(iy/ph);
-        const pos = row*n+col;
-        if (pos >= 0 && pos < n*n) {
-          dragging = true; dragPos = pos; pinchCooldown = 20;
-        }
+      if (p && !dragging && cooldown===0) {
+        const pos=Math.floor(iy/ph)*n+Math.floor(ix/pw);
+        if (pos>=0&&pos<n*n) { dragging=true; dragPos=pos; cooldown=18; }
       }
-      // Hover highlight
-      if (!dragging) {
-        const hc = Math.floor(ix/pw), hr = Math.floor(iy/ph);
-        if (hc >= 0 && hc < n && hr >= 0 && hr < n) {
-          ctx.strokeStyle = 'rgba(57,255,20,0.4)'; ctx.lineWidth = 2;
-          ctx.strokeRect(hc*pw, hr*ph, pw, ph);
-        }
+      const hc=Math.floor(ix/pw), hr=Math.floor(iy/ph);
+      if (!dragging&&hc>=0&&hc<n&&hr>=0&&hr<n) {
+        ctx.strokeStyle='rgba(57,255,20,0.35)'; ctx.lineWidth=2;
+        ctx.strokeRect(hc*pw,hr*ph,pw,ph);
       }
     }
 
-    drawSkeleton(lm, pinched ? ACCENT : 'rgba(57,255,20,0.5)');
-    ctx.beginPath();
-    ctx.arc(ix, iy, pinched ? 10 : 6, 0, Math.PI*2);
-    ctx.fillStyle = pinched ? ACCENT : 'rgba(57,255,20,0.4)';
-    if (pinched) { ctx.shadowColor = ACCENT; ctx.shadowBlur = 12; }
-    ctx.fill();
-    ctx.shadowBlur = 0;
+    drawSkel(lm, p?A:'rgba(57,255,20,0.55)');
+    ctx.beginPath(); ctx.arc(ix,iy,p?11:6,0,Math.PI*2);
+    ctx.fillStyle=p?A:'rgba(57,255,20,0.4)';
+    if(p){ctx.shadowColor=A;ctx.shadowBlur=14;}
+    ctx.fill(); ctx.shadowBlur=0;
   }
 }
 
-const CONNECTIONS = [
-  [0,1],[1,2],[2,3],[3,4],
-  [0,5],[5,6],[6,7],[7,8],
-  [0,9],[9,10],[10,11],[11,12],
-  [0,13],[13,14],[14,15],[15,16],
-  [0,17],[17,18],[18,19],[19,20],
-  [5,9],[9,13],[13,17]
-];
-function drawSkeleton(lm, color) {
-  ctx.strokeStyle = color; ctx.lineWidth = 1.5;
-  for (const [a,b] of CONNECTIONS) {
-    ctx.beginPath();
-    ctx.moveTo(lm[a].x, lm[a].y);
-    ctx.lineTo(lm[b].x, lm[b].y);
-    ctx.stroke();
-  }
-  for (const p of lm) {
-    ctx.beginPath(); ctx.arc(p.x, p.y, 2.5, 0, Math.PI*2);
-    ctx.fillStyle = color; ctx.fill();
-  }
+const CONN=[[0,1],[1,2],[2,3],[3,4],[0,5],[5,6],[6,7],[7,8],[0,9],[9,10],[10,11],[11,12],[0,13],[13,14],[14,15],[15,16],[0,17],[17,18],[18,19],[19,20],[5,9],[9,13],[13,17]];
+function drawSkel(lm,color) {
+  ctx.strokeStyle=color; ctx.lineWidth=1.5;
+  for(const[a,b]of CONN){ctx.beginPath();ctx.moveTo(lm[a].x,lm[a].y);ctx.lineTo(lm[b].x,lm[b].y);ctx.stroke();}
+  for(const p of lm){ctx.beginPath();ctx.arc(p.x,p.y,3,0,Math.PI*2);ctx.fillStyle=color;ctx.fill();}
 }
 
-// ── Init ──
-async function init() {
-  try {
-    loadingText.textContent = 'Starting camera...';
-    const stream = await navigator.mediaDevices.getUserMedia({ video: { width: 640, height: 480, facingMode: 'user' } });
+// ── Start camera ──
+ltxt.textContent = 'Requesting camera...';
+navigator.mediaDevices.getUserMedia({ video:{width:640,height:480,facingMode:'user'} })
+  .then(stream => {
     video.srcObject = stream;
-    await video.play();
-
-    loadingText.textContent = 'Loading hand tracking model...';
-    const model = handPoseDetection.SupportedModels.MediaPipeHands;
-    detector = await handPoseDetection.createDetector(model, {
-      runtime: 'tfjs',
-      modelType: 'lite',
-      maxHands: 2,
+    video.play();
+    ltxt.textContent = 'Loading hand model (first load ~5s)...';
+    const cam = new Camera(video, {
+      onFrame: async () => { await hands.send({image:video}); },
+      width:640, height:480
     });
-
-    loadingMsg.style.display = 'none';
-    updateStatus();
-    loop();
-  } catch(err) {
-    loadingText.textContent = '❌ ' + (err.message || 'Camera/model error');
-  }
-}
-
-init();
+    hands.initialize().then(() => {
+      loading.style.display='none';
+      updateUI();
+      cam.start();
+    }).catch(e => { ltxt.textContent='❌ Model load failed: '+e.message; });
+  })
+  .catch(e => { ltxt.textContent='❌ Camera error: '+e.message; });
 </script>
 </body>
 </html>
