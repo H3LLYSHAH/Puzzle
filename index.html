@@ -4,172 +4,59 @@
 <meta charset="utf-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
 <title>Live Puzzle Game</title>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/mediapipe/0.10.3/camera_utils.js"></script>
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
   :root {
-    --bg: #0a0a0a;
-    --surface: #111;
-    --border: #1e1e1e;
-    --text: #f0f0f0;
-    --muted: #555;
-    --accent: #39ff14;
+    --bg: #0a0a0a; --surface: #111; --border: #1e1e1e;
+    --text: #f0f0f0; --muted: #555; --accent: #39ff14;
     --accent-dim: rgba(57,255,20,0.10);
-    --font-display: 'Space Mono', monospace;
-    --font-body: 'Space Grotesk', sans-serif;
   }
-
-  @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Space+Mono:wght@400;700&display=swap');
-
-  body {
-    background: var(--bg);
-    color: var(--text);
-    font-family: var(--font-body);
-    min-height: 100vh;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-  }
-
-  header {
-    width: 100%;
-    max-width: 960px;
-    padding: 28px 16px 20px;
-    display: flex;
-    align-items: center;
-    gap: 14px;
-    border-bottom: 1px solid var(--border);
-    margin-bottom: 32px;
-  }
+  body { background: var(--bg); color: var(--text); font-family: 'Space Grotesk', 'Segoe UI', sans-serif; min-height: 100vh; display: flex; flex-direction: column; align-items: center; }
+  header { width: 100%; max-width: 960px; padding: 28px 16px 20px; display: flex; align-items: center; gap: 14px; border-bottom: 1px solid var(--border); margin-bottom: 32px; }
   .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--accent); box-shadow: 0 0 10px var(--accent); flex-shrink: 0; }
-  h1 { font-family: var(--font-display); font-size: clamp(16px, 3.5vw, 22px); font-weight: 700; letter-spacing: -0.5px; }
-  .subtitle { margin-left: auto; font-size: 12px; color: var(--muted); font-family: var(--font-display); letter-spacing: 0.4px; }
-
-  main {
-    width: 100%;
-    max-width: 960px;
-    padding: 0 16px 60px;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 20px;
-  }
-
-  /* Canvas container */
-  .canvas-wrap {
-    position: relative;
-    width: 100%;
-    max-width: 640px;
-    aspect-ratio: 4/3;
-    border: 1.5px solid var(--border);
-    border-radius: 4px;
-    overflow: hidden;
-    background: #000;
-  }
-
+  h1 { font-family: 'Space Mono', monospace; font-size: clamp(16px, 3.5vw, 22px); font-weight: 700; letter-spacing: -0.5px; }
+  .subtitle { margin-left: auto; font-size: 12px; color: var(--muted); font-family: 'Space Mono', monospace; letter-spacing: 0.4px; }
+  main { width: 100%; max-width: 960px; padding: 0 16px 60px; display: flex; flex-direction: column; align-items: center; gap: 20px; }
+  .canvas-wrap { position: relative; width: 100%; max-width: 640px; aspect-ratio: 4/3; border: 1.5px solid var(--border); border-radius: 4px; overflow: hidden; background: #000; }
   #videoEl { display: none; }
-
-  #overlayCanvas {
-    position: absolute;
-    inset: 0;
-    width: 100%;
-    height: 100%;
-    cursor: none;
-  }
-
-  /* Status bar */
-  .status-bar {
-    width: 100%; max-width: 640px;
-    display: flex; align-items: center; gap: 10px;
-    font-family: var(--font-display); font-size: 12px; color: var(--muted);
-    min-height: 28px;
-  }
-  .status-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--muted); flex-shrink: 0; }
+  #overlayCanvas { position: absolute; inset: 0; width: 100%; height: 100%; cursor: none; }
+  .status-bar { width: 100%; max-width: 640px; display: flex; align-items: center; gap: 10px; font-family: 'Space Mono', monospace; font-size: 12px; color: var(--muted); min-height: 28px; }
+  .status-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--muted); flex-shrink: 0; transition: background 0.3s; }
   .status-dot.active { background: var(--accent); box-shadow: 0 0 8px var(--accent); }
-  #statusText { flex: 1; }
-
-  /* Controls */
-  .controls {
-    width: 100%; max-width: 640px;
-    display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
-  }
-  .grid-label { font-size: 11px; color: var(--muted); font-family: var(--font-display); letter-spacing: 0.5px; }
-  .grid-btn {
-    width: 36px; height: 36px; border: 1.5px solid var(--border);
-    background: transparent; color: var(--text); font-family: var(--font-display);
-    font-size: 13px; cursor: pointer; border-radius: 2px; transition: all 0.15s;
-  }
+  .controls { width: 100%; max-width: 640px; display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+  .grid-label { font-size: 11px; color: var(--muted); font-family: 'Space Mono', monospace; letter-spacing: 0.5px; }
+  .grid-btn { width: 36px; height: 36px; border: 1.5px solid var(--border); background: transparent; color: var(--text); font-family: 'Space Mono', monospace; font-size: 13px; cursor: pointer; border-radius: 2px; transition: all 0.15s; }
   .grid-btn:hover { border-color: var(--accent); color: var(--accent); }
   .grid-btn.active { border-color: var(--accent); background: var(--accent-dim); color: var(--accent); }
-
-  .reset-btn {
-    margin-left: auto; padding: 0 18px; height: 36px;
-    background: transparent; color: var(--muted); border: 1px solid var(--border);
-    font-family: var(--font-body); font-size: 12px; cursor: pointer; border-radius: 2px;
-    transition: all 0.15s;
-  }
+  .reset-btn { margin-left: auto; padding: 0 18px; height: 36px; background: transparent; color: var(--muted); border: 1px solid var(--border); font-size: 12px; cursor: pointer; border-radius: 2px; transition: all 0.15s; }
   .reset-btn:hover { border-color: var(--accent); color: var(--accent); }
-
-  /* Instructions */
-  .instructions {
-    width: 100%; max-width: 640px;
-    display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px;
-  }
-  .step {
-    border: 1px solid var(--border); border-radius: 3px;
-    padding: 14px 12px; display: flex; flex-direction: column; gap: 6px;
-  }
-  .step-num { font-family: var(--font-display); font-size: 10px; color: var(--accent); letter-spacing: 1px; }
+  .instructions { width: 100%; max-width: 640px; display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+  .step { border: 1px solid var(--border); border-radius: 3px; padding: 14px 12px; display: flex; flex-direction: column; gap: 6px; }
+  .step-num { font-family: 'Space Mono', monospace; font-size: 10px; color: var(--accent); letter-spacing: 1px; }
   .step-title { font-size: 13px; font-weight: 600; }
   .step-desc { font-size: 11px; color: var(--muted); line-height: 1.5; }
-
-  /* Solved overlay */
-  #solvedOverlay {
-    display: none;
-    position: absolute; inset: 0;
-    background: rgba(0,0,0,0.88);
-    align-items: center; justify-content: center;
-    flex-direction: column; gap: 14px;
-    z-index: 10;
-    animation: fadeIn 0.4s ease;
-  }
+  #solvedOverlay { display: none; position: absolute; inset: 0; background: rgba(0,0,0,0.88); align-items: center; justify-content: center; flex-direction: column; gap: 14px; z-index: 10; animation: fadeIn 0.4s ease; }
   #solvedOverlay.show { display: flex; }
   @keyframes fadeIn { from { opacity: 0 } to { opacity: 1 } }
   .solved-trophy { font-size: 48px; animation: pop 0.5s cubic-bezier(.36,.07,.19,.97); }
   @keyframes pop { 0%{transform:scale(0)} 70%{transform:scale(1.15)} 100%{transform:scale(1)} }
-  .solved-title { font-family: var(--font-display); font-size: 20px; color: var(--accent); text-shadow: 0 0 20px var(--accent); }
+  .solved-title { font-family: 'Space Mono', monospace; font-size: 20px; color: var(--accent); text-shadow: 0 0 20px var(--accent); }
   .solved-moves { font-size: 13px; color: var(--muted); }
-  .play-again {
-    padding: 10px 28px; background: var(--accent); color: #000;
-    border: none; font-family: var(--font-display); font-size: 13px; font-weight: 700;
-    cursor: pointer; border-radius: 2px; letter-spacing: 0.5px;
-    margin-top: 6px; transition: opacity 0.15s;
-  }
+  .play-again { padding: 10px 28px; background: var(--accent); color: #000; border: none; font-family: 'Space Mono', monospace; font-size: 13px; font-weight: 700; cursor: pointer; border-radius: 2px; margin-top: 6px; transition: opacity 0.15s; }
   .play-again:hover { opacity: 0.85; }
-
-  /* Loading */
-  #loadingMsg {
-    position: absolute; inset: 0; background: #000;
-    display: flex; flex-direction: column; align-items: center; justify-content: center;
-    gap: 12px; z-index: 20; font-family: var(--font-display); font-size: 13px; color: var(--muted);
-  }
-  .spinner {
-    width: 28px; height: 28px; border: 2px solid var(--border);
-    border-top-color: var(--accent); border-radius: 50%;
-    animation: spin 0.8s linear infinite;
-  }
+  #loadingMsg { position: absolute; inset: 0; background: #000; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px; z-index: 20; font-family: 'Space Mono', monospace; font-size: 13px; color: var(--muted); }
+  .spinner { width: 28px; height: 28px; border: 2px solid var(--border); border-top-color: var(--accent); border-radius: 50%; animation: spin 0.8s linear infinite; }
   @keyframes spin { to { transform: rotate(360deg); } }
 </style>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet"/>
 </head>
 <body>
-
 <header>
   <div class="dot"></div>
   <h1>LIVE PUZZLE</h1>
   <span class="subtitle">hand gesture control</span>
 </header>
-
 <main>
   <div class="canvas-wrap">
     <video id="videoEl" playsinline></video>
@@ -182,16 +69,14 @@
     </div>
     <div id="loadingMsg">
       <div class="spinner"></div>
-      <span>Loading hand tracking...</span>
+      <span id="loadingText">Starting camera...</span>
     </div>
   </div>
-
   <div class="status-bar">
     <div class="status-dot" id="statusDot"></div>
-    <span id="statusText">Starting camera...</span>
-    <span id="movesDisplay" style="font-family:var(--font-display);color:var(--text);"></span>
+    <span id="statusText">Initializing...</span>
+    <span id="movesDisplay" style="font-family:'Space Mono',monospace;color:var(--text);"></span>
   </div>
-
   <div class="controls">
     <span class="grid-label">GRID</span>
     <button class="grid-btn active" onclick="setGrid(3,this)">3</button>
@@ -199,72 +84,63 @@
     <button class="grid-btn" onclick="setGrid(5,this)">5</button>
     <button class="reset-btn" onclick="resetPuzzle()">↺ Reset</button>
   </div>
-
   <div class="instructions">
     <div class="step">
       <span class="step-num">01 — FRAME</span>
       <div class="step-title">Show both hands</div>
-      <div class="step-desc">Hold both hands up to frame the area you want to puzzle-ify.</div>
+      <div class="step-desc">Hold both hands up to frame the area you want to puzzl-ify.</div>
     </div>
     <div class="step">
       <span class="step-num">02 — CAPTURE</span>
       <div class="step-title">Pinch to capture</div>
-      <div class="step-desc">Bring your index finger and thumb together (pinch) to snap the framed image.</div>
+      <div class="step-desc">Bring index finger and thumb together to snap the framed image.</div>
     </div>
     <div class="step">
       <span class="step-num">03 — SOLVE</span>
       <div class="step-title">Drag to swap</div>
-      <div class="step-desc">Pinch over a piece to grab it, move your hand, open to drop and swap.</div>
+      <div class="step-desc">Pinch a piece to grab it, move your hand, open to drop and swap.</div>
     </div>
   </div>
 </main>
 
-<script type="module">
-// ─── Load MediaPipe Hands via CDN ───
-import { Hands, HAND_CONNECTIONS } from 'https://cdn.jsdelivr.net/npm/@mediapipe/hands@0.4.1646424915/hands.js';
-import { drawConnectors, drawLandmarks } from 'https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils@0.3.1620248257/drawing_utils.js';
-import { Camera } from 'https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils@0.3.1620248257/camera_utils.js';
+<!-- TensorFlow.js + HandPose — loads fast, no WASM download issues -->
+<script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.17.0/dist/tf.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/hand-pose-detection@2.0.1/dist/hand-pose-detection.min.js"></script>
 
+<script>
 const video = document.getElementById('videoEl');
 const canvas = document.getElementById('overlayCanvas');
 const ctx = canvas.getContext('2d');
 const loadingMsg = document.getElementById('loadingMsg');
+const loadingText = document.getElementById('loadingText');
 const statusDot = document.getElementById('statusDot');
-const statusText = document.getElementById('statusText');
+const statusTxt = document.getElementById('statusText');
 const movesDisplay = document.getElementById('movesDisplay');
 const solvedOverlay = document.getElementById('solvedOverlay');
 const solvedMoves = document.getElementById('solvedMoves');
 
-// ─── State ───
 let gridSize = 3;
-let phase = 'capture'; // 'capture' | 'solve'
+let phase = 'capture';
 let capturedImage = null;
-let pieces = []; // {img, correctIdx}
-let order = []; // order[displayPos] = correctIdx
+let pieces = [];
+let order = [];
 let moves = 0;
-
-// Gesture state
-let landmarks = []; // array of hands, each = array of 21 [x,y]
-let pinchState = [false, false]; // per hand
+let detector = null;
+let landmarks = []; // array of hands, each = 21 keypoints {x,y}
 let dragging = false;
-let dragPiecePos = null; // grid pos being dragged
-let dragHandPos = null; // current hand x,y (0-1)
+let dragPos = null;
 let pinchCooldown = 0;
+let animFrame = null;
 
-// Canvas size
 let CW = 640, CH = 480;
-
 function resize() {
   const wrap = canvas.parentElement;
-  CW = wrap.clientWidth;
-  CH = wrap.clientHeight;
-  canvas.width = CW;
-  canvas.height = CH;
+  CW = wrap.clientWidth; CH = wrap.clientHeight;
+  canvas.width = CW; canvas.height = CH;
 }
 resize();
 window.addEventListener('resize', resize);
 
-// ─── Grid control ───
 window.setGrid = function(n, btn) {
   gridSize = n;
   document.querySelectorAll('.grid-btn').forEach(b => b.classList.remove('active'));
@@ -272,321 +148,229 @@ window.setGrid = function(n, btn) {
   if (phase === 'solve') resetPuzzle();
 };
 
-// ─── Reset ───
 window.resetPuzzle = function() {
-  if (capturedImage) {
-    buildPuzzle(capturedImage);
-  } else {
-    phase = 'capture';
-    pieces = []; order = []; moves = 0;
-    updateStatus('capture');
-    solvedOverlay.classList.remove('show');
-  }
   solvedOverlay.classList.remove('show');
+  if (capturedImage) { buildPuzzle(capturedImage); }
+  else { phase = 'capture'; pieces = []; order = []; moves = 0; updateStatus(); }
 };
 
-// ─── Build puzzle from image ───
 function buildPuzzle(img) {
   capturedImage = img;
-  phase = 'solve';
-  moves = 0;
-  movesDisplay.textContent = 'moves: 0';
-
-  const n = gridSize;
-  const pw = img.width / n;
-  const ph = img.height / n;
+  phase = 'solve'; moves = 0; movesDisplay.textContent = 'moves: 0';
+  const n = gridSize, pw = img.width / n, ph = img.height / n;
   pieces = [];
   for (let r = 0; r < n; r++) {
     for (let c = 0; c < n; c++) {
-      const offCanvas = new OffscreenCanvas(pw, ph);
-      const offCtx = offCanvas.getContext('2d');
-      offCtx.drawImage(img, c * pw, r * ph, pw, ph, 0, 0, pw, ph);
-      pieces.push({ img: offCanvas, correctIdx: r * n + c });
+      const oc = document.createElement('canvas');
+      oc.width = pw; oc.height = ph;
+      oc.getContext('2d').drawImage(img, c*pw, r*ph, pw, ph, 0, 0, pw, ph);
+      pieces.push(oc);
     }
   }
-
-  // Shuffle
-  order = pieces.map((_, i) => i);
-  for (let i = order.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [order[i], order[j]] = [order[j], order[i]];
+  order = pieces.map((_,i) => i);
+  for (let i = order.length-1; i > 0; i--) {
+    const j = Math.floor(Math.random()*(i+1));
+    [order[i],order[j]] = [order[j],order[i]];
   }
-
-  dragging = false;
-  dragPiecePos = null;
-  updateStatus('solve');
+  dragging = false; dragPos = null;
+  updateStatus();
 }
 
-function updateStatus(ph) {
-  statusDot.classList.toggle('active', ph === 'solve');
-  if (ph === 'capture') {
-    statusText.textContent = 'Show both hands, frame the area, then pinch to capture';
+function updateStatus() {
+  statusDot.classList.toggle('active', phase === 'solve');
+  if (phase === 'capture') {
+    statusTxt.textContent = 'Show both hands → frame area → pinch to capture';
     movesDisplay.textContent = '';
   } else {
-    statusText.textContent = 'Pinch to grab a piece · release to drop';
+    statusTxt.textContent = 'Pinch to grab a piece · open hand to drop';
   }
 }
 
-// ─── Check solved ───
 function checkSolved() {
-  const solved = order.every((v, i) => v === i);
-  if (solved) {
+  if (order.every((v,i) => v === i)) {
     solvedMoves.textContent = `Solved in ${moves} moves`;
     solvedOverlay.classList.add('show');
   }
 }
 
-// ─── Pinch detection ───
 function isPinched(lm) {
-  const thumb = lm[4], index = lm[8];
-  const dx = thumb[0] - index[0], dy = thumb[1] - index[1];
-  return Math.hypot(dx, dy) < 0.07; // normalized coords
+  const t = lm[4], i = lm[8];
+  return Math.hypot(t.x - i.x, t.y - i.y) < 40; // pixel distance
 }
 
-// Wrist landmark in normalized coords
-function wrist(lm) { return lm[0]; }
-function pinky(lm) { return lm[17]; }
-
-// ─── MediaPipe Hands setup ───
-const hands = new Hands({ locateFile: f => `https://cdn.jsdelivr.net/npm/@mediapipe/hands@0.4.1646424915/${f}` });
-hands.setOptions({
-  maxNumHands: 2,
-  modelComplexity: 1,
-  minDetectionConfidence: 0.7,
-  minTrackingConfidence: 0.7,
-});
-
-hands.onResults(onResults);
-
-const camera = new Camera(video, {
-  onFrame: async () => { await hands.send({ image: video }); },
-  width: 640, height: 480,
-});
-camera.start().then(() => {
-  loadingMsg.style.display = 'none';
-  updateStatus('capture');
-}).catch(err => {
-  loadingMsg.querySelector('span').textContent = 'Camera error: ' + err.message;
-});
-
-// ─── Main render/logic ───
-function onResults(results) {
+// ── Main loop ──
+async function loop() {
+  if (!detector) { animFrame = requestAnimationFrame(loop); return; }
   resize();
-  ctx.clearRect(0, 0, CW, CH);
-
-  // Draw mirrored camera feed
   ctx.save();
   ctx.translate(CW, 0); ctx.scale(-1, 1);
-  ctx.drawImage(results.image, 0, 0, CW, CH);
+  ctx.drawImage(video, 0, 0, CW, CH);
   ctx.restore();
 
-  landmarks = [];
-  if (results.multiHandLandmarks) {
-    for (const lm of results.multiHandLandmarks) {
-      // Mirror x coords
-      landmarks.push(lm.map(p => [1 - p.x, p.y]));
-    }
-  }
+  try {
+    const hands = await detector.estimateHands(video, { flipHorizontal: true });
+    landmarks = hands.map(h => h.keypoints);
+  } catch(e) { landmarks = []; }
 
   if (pinchCooldown > 0) pinchCooldown--;
 
-  if (phase === 'capture') {
-    renderCapturePhase();
-  } else {
-    renderSolvePhase();
-  }
+  if (phase === 'capture') renderCapture();
+  else renderSolve();
+
+  animFrame = requestAnimationFrame(loop);
 }
 
-function renderCapturePhase() {
+function renderCapture() {
   const ACCENT = '#39ff14';
-
-  // Draw hand skeletons
-  for (const lm of landmarks) {
-    drawHandSkeleton(lm, ACCENT);
-  }
+  for (const lm of landmarks) drawSkeleton(lm, ACCENT);
 
   if (landmarks.length >= 2) {
-    // Compute bounding rect between both hands
     const h0 = landmarks[0], h1 = landmarks[1];
-    const pts = [wrist(h0), pinky(h0), wrist(h1), pinky(h1)];
-    const xs = pts.map(p => p[0] * CW);
-    const ys = pts.map(p => p[1] * CH);
+    const allPts = [...h0, ...h1];
+    const xs = allPts.map(p => p.x), ys = allPts.map(p => p.y);
     const rx = Math.min(...xs), ry = Math.min(...ys);
     const rw = Math.max(...xs) - rx, rh = Math.max(...ys) - ry;
 
-    // Draw frame rect
-    ctx.strokeStyle = '#b4ff6e';
-    ctx.lineWidth = 2;
-    ctx.setLineDash([6, 4]);
-    ctx.strokeRect(rx, ry, rw, rh);
-    ctx.setLineDash([]);
+    ctx.strokeStyle = '#b4ff6e'; ctx.lineWidth = 2;
+    ctx.setLineDash([6,4]); ctx.strokeRect(rx, ry, rw, rh); ctx.setLineDash([]);
+    ctx.fillStyle = '#b4ff6e'; ctx.font = '600 12px Space Grotesk,sans-serif';
+    ctx.fillText('PINCH TO CAPTURE', rx+6, Math.max(ry-8, 16));
 
-    // Label
-    ctx.fillStyle = '#b4ff6e';
-    ctx.font = '600 12px Space Grotesk, sans-serif';
-    ctx.fillText('PINCH TO CAPTURE', rx + 6, ry - 8);
-
-    // Check pinch on either hand
-    const p0 = isPinched(h0), p1 = isPinched(h1);
-    if ((p0 || p1) && pinchCooldown === 0) {
-      // Capture the framed region from the canvas
-      const tempCanvas = new OffscreenCanvas(Math.max(rw, 1), Math.max(rh, 1));
-      const tCtx = tempCanvas.getContext('2d');
-      // Draw mirrored image into temp
-      tCtx.save();
-      tCtx.translate(rw, 0); tCtx.scale(-1, 1);
-      const srcX = (1 - (rx + rw) / CW) * CW;
-      tCtx.drawImage(canvas, srcX, ry, rw, rh, 0, 0, rw, rh);
-      tCtx.restore();
-      // Simpler: grab from current drawn canvas region (already mirrored)
-      const capCanvas = new OffscreenCanvas(Math.max(rw, 1), Math.max(rh, 1));
-      const capCtx = capCanvas.getContext('2d');
-      capCtx.drawImage(canvas, rx, ry, rw, rh, 0, 0, rw, rh);
-      buildPuzzle(capCanvas);
-      pinchCooldown = 30;
+    const pinched = landmarks.some(lm => isPinched(lm));
+    if (pinched && pinchCooldown === 0 && rw > 20 && rh > 20) {
+      const cap = document.createElement('canvas');
+      cap.width = rw; cap.height = rh;
+      cap.getContext('2d').drawImage(canvas, rx, ry, rw, rh, 0, 0, rw, rh);
+      buildPuzzle(cap);
+      pinchCooldown = 40;
     }
   } else {
-    // Prompt
     ctx.fillStyle = 'rgba(57,255,20,0.7)';
-    ctx.font = '700 13px Space Mono, monospace';
+    ctx.font = '700 13px Space Mono,monospace';
     ctx.textAlign = 'center';
-    ctx.fillText('SHOW BOTH HANDS TO FRAME', CW / 2, CH - 20);
+    ctx.fillText('SHOW BOTH HANDS TO FRAME', CW/2, CH-20);
     ctx.textAlign = 'left';
   }
 }
 
-function renderSolvePhase() {
-  const n = gridSize;
-  const pw = CW / n, ph = CH / n;
+function renderSolve() {
+  const n = gridSize, pw = CW/n, ph = CH/n;
   const ACCENT = '#39ff14';
 
-  // Draw puzzle pieces
-  for (let pos = 0; pos < n * n; pos++) {
-    const pieceIdx = order[pos];
-    const piece = pieces[pieceIdx];
-    const col = pos % n, row = Math.floor(pos / n);
-    const x = col * pw, y = row * ph;
-
-    if (dragging && dragPiecePos === pos) {
-      // Draw semi-transparent at origin
-      ctx.globalAlpha = 0.3;
-    }
-    ctx.drawImage(piece.img, x, y, pw, ph);
+  // Draw pieces
+  for (let pos = 0; pos < n*n; pos++) {
+    const col = pos%n, row = Math.floor(pos/n);
+    const x = col*pw, y = row*ph;
+    if (dragging && dragPos === pos) { ctx.globalAlpha = 0.3; }
+    ctx.drawImage(pieces[order[pos]], x, y, pw, ph);
     ctx.globalAlpha = 1;
-
-    // Grid borders
-    ctx.strokeStyle = '#1e1e1e';
-    ctx.lineWidth = 1.5;
+    ctx.strokeStyle = '#1e1e1e'; ctx.lineWidth = 1.5;
     ctx.strokeRect(x, y, pw, ph);
   }
 
-  // Draw hand + dragged piece
-  for (let hi = 0; hi < landmarks.length; hi++) {
-    const lm = landmarks[hi];
+  // Process hands
+  for (const lm of landmarks) {
     const pinched = isPinched(lm);
-    const indexTip = lm[8];
-    const ix = indexTip[0] * CW, iy = indexTip[1] * CH;
+    const tip = lm[8]; // index finger tip
+    const ix = tip.x, iy = tip.y;
 
-    if (dragging && dragPiecePos !== null) {
+    if (dragging && dragPos !== null) {
       if (pinched) {
-        // Move dragged piece to hand position
-        dragHandPos = [ix, iy];
         // Draw floating piece at hand
-        const pieceIdx = order[dragPiecePos];
-        const piece = pieces[pieceIdx];
         ctx.save();
-        ctx.shadowColor = ACCENT;
-        ctx.shadowBlur = 18;
+        ctx.shadowColor = ACCENT; ctx.shadowBlur = 18;
         ctx.globalAlpha = 0.92;
-        ctx.drawImage(piece.img, ix - pw / 2, iy - ph / 2, pw, ph);
+        ctx.drawImage(pieces[order[dragPos]], ix-pw/2, iy-ph/2, pw, ph);
         ctx.globalAlpha = 1;
-        ctx.strokeStyle = ACCENT;
-        ctx.lineWidth = 2;
-        ctx.strokeRect(ix - pw / 2, iy - ph / 2, pw, ph);
+        ctx.strokeStyle = ACCENT; ctx.lineWidth = 2;
+        ctx.strokeRect(ix-pw/2, iy-ph/2, pw, ph);
         ctx.restore();
-      } else {
-        // Drop — find target cell
-        if (pinchCooldown === 0) {
-          const dropCol = Math.floor(ix / pw), dropRow = Math.floor(iy / ph);
-          const dropPos = dropRow * n + dropCol;
-          if (dropPos >= 0 && dropPos < n * n && dropPos !== dragPiecePos) {
-            [order[dragPiecePos], order[dropPos]] = [order[dropPos], order[dragPiecePos]];
-            moves++;
-            movesDisplay.textContent = `moves: ${moves}`;
-            checkSolved();
-          }
-          dragging = false;
-          dragPiecePos = null;
-          pinchCooldown = 20;
+      } else if (pinchCooldown === 0) {
+        // Drop
+        const dc = Math.floor(ix/pw), dr = Math.floor(iy/ph);
+        const dp = dr*n+dc;
+        if (dp >= 0 && dp < n*n && dp !== dragPos) {
+          [order[dragPos], order[dp]] = [order[dp], order[dragPos]];
+          moves++; movesDisplay.textContent = `moves: ${moves}`;
+          checkSolved();
         }
+        dragging = false; dragPos = null; pinchCooldown = 20;
       }
     } else {
       if (pinched && !dragging && pinchCooldown === 0) {
-        // Pick up piece under index tip
-        const col = Math.floor(ix / pw), row = Math.floor(iy / ph);
-        const pos = row * n + col;
-        if (pos >= 0 && pos < n * n) {
-          dragging = true;
-          dragPiecePos = pos;
-          dragHandPos = [ix, iy];
-          pinchCooldown = 15;
+        const col = Math.floor(ix/pw), row = Math.floor(iy/ph);
+        const pos = row*n+col;
+        if (pos >= 0 && pos < n*n) {
+          dragging = true; dragPos = pos; pinchCooldown = 20;
+        }
+      }
+      // Hover highlight
+      if (!dragging) {
+        const hc = Math.floor(ix/pw), hr = Math.floor(iy/ph);
+        if (hc >= 0 && hc < n && hr >= 0 && hr < n) {
+          ctx.strokeStyle = 'rgba(57,255,20,0.4)'; ctx.lineWidth = 2;
+          ctx.strokeRect(hc*pw, hr*ph, pw, ph);
         }
       }
     }
 
-    // Draw hand skeleton
-    drawHandSkeleton(lm, pinched ? ACCENT : 'rgba(57,255,20,0.5)');
-
-    // Cursor dot
+    drawSkeleton(lm, pinched ? ACCENT : 'rgba(57,255,20,0.5)');
     ctx.beginPath();
-    ctx.arc(ix, iy, pinched ? 10 : 6, 0, Math.PI * 2);
+    ctx.arc(ix, iy, pinched ? 10 : 6, 0, Math.PI*2);
     ctx.fillStyle = pinched ? ACCENT : 'rgba(57,255,20,0.4)';
+    if (pinched) { ctx.shadowColor = ACCENT; ctx.shadowBlur = 12; }
     ctx.fill();
-    if (pinched) {
-      ctx.shadowColor = ACCENT;
-      ctx.shadowBlur = 12;
-      ctx.fill();
-      ctx.shadowBlur = 0;
-    }
-  }
-
-  // Hover highlight (no dragging)
-  if (!dragging && landmarks.length > 0) {
-    const lm = landmarks[0];
-    const ix = lm[8][0] * CW, iy = lm[8][1] * CH;
-    const col = Math.floor(ix / pw), row = Math.floor(iy / ph);
-    if (col >= 0 && col < n && row >= 0 && row < n) {
-      ctx.strokeStyle = 'rgba(57,255,20,0.4)';
-      ctx.lineWidth = 2;
-      ctx.strokeRect(col * pw, row * ph, pw, ph);
-    }
+    ctx.shadowBlur = 0;
   }
 }
 
-function drawHandSkeleton(lm, color) {
-  const connections = [
-    [0,1],[1,2],[2,3],[3,4],
-    [0,5],[5,6],[6,7],[7,8],
-    [0,9],[9,10],[10,11],[11,12],
-    [0,13],[13,14],[14,15],[15,16],
-    [0,17],[17,18],[18,19],[19,20],
-    [5,9],[9,13],[13,17],
-  ];
-  ctx.strokeStyle = color;
-  ctx.lineWidth = 1.5;
-  for (const [a, b] of connections) {
+const CONNECTIONS = [
+  [0,1],[1,2],[2,3],[3,4],
+  [0,5],[5,6],[6,7],[7,8],
+  [0,9],[9,10],[10,11],[11,12],
+  [0,13],[13,14],[14,15],[15,16],
+  [0,17],[17,18],[18,19],[19,20],
+  [5,9],[9,13],[13,17]
+];
+function drawSkeleton(lm, color) {
+  ctx.strokeStyle = color; ctx.lineWidth = 1.5;
+  for (const [a,b] of CONNECTIONS) {
     ctx.beginPath();
-    ctx.moveTo(lm[a][0] * CW, lm[a][1] * CH);
-    ctx.lineTo(lm[b][0] * CW, lm[b][1] * CH);
+    ctx.moveTo(lm[a].x, lm[a].y);
+    ctx.lineTo(lm[b].x, lm[b].y);
     ctx.stroke();
   }
   for (const p of lm) {
-    ctx.beginPath();
-    ctx.arc(p[0] * CW, p[1] * CH, 2.5, 0, Math.PI * 2);
-    ctx.fillStyle = color;
-    ctx.fill();
+    ctx.beginPath(); ctx.arc(p.x, p.y, 2.5, 0, Math.PI*2);
+    ctx.fillStyle = color; ctx.fill();
   }
 }
+
+// ── Init ──
+async function init() {
+  try {
+    loadingText.textContent = 'Starting camera...';
+    const stream = await navigator.mediaDevices.getUserMedia({ video: { width: 640, height: 480, facingMode: 'user' } });
+    video.srcObject = stream;
+    await video.play();
+
+    loadingText.textContent = 'Loading hand tracking model...';
+    const model = handPoseDetection.SupportedModels.MediaPipeHands;
+    detector = await handPoseDetection.createDetector(model, {
+      runtime: 'tfjs',
+      modelType: 'lite',
+      maxHands: 2,
+    });
+
+    loadingMsg.style.display = 'none';
+    updateStatus();
+    loop();
+  } catch(err) {
+    loadingText.textContent = '❌ ' + (err.message || 'Camera/model error');
+  }
+}
+
+init();
 </script>
 </body>
 </html>
