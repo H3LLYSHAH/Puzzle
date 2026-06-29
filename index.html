@@ -5,284 +5,211 @@
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
 <title>Live Puzzle Game</title>
 <style>
-  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-  :root { --bg:#0a0a0a;--border:#1e1e1e;--text:#f0f0f0;--muted:#555;--accent:#39ff14;--accent-dim:rgba(57,255,20,0.10); }
-  body { background:var(--bg);color:var(--text);font-family:'Segoe UI',sans-serif;min-height:100vh;display:flex;flex-direction:column;align-items:center; }
-  header { width:100%;max-width:960px;padding:24px 16px 18px;display:flex;align-items:center;gap:14px;border-bottom:1px solid var(--border);margin-bottom:28px; }
-  .dot { width:8px;height:8px;border-radius:50%;background:var(--accent);box-shadow:0 0 10px var(--accent);flex-shrink:0; }
-  h1 { font-family:monospace;font-size:clamp(16px,3.5vw,22px);font-weight:700;letter-spacing:-0.5px; }
-  .subtitle { margin-left:auto;font-size:12px;color:var(--muted);font-family:monospace; }
-  main { width:100%;max-width:960px;padding:0 16px 60px;display:flex;flex-direction:column;align-items:center;gap:18px; }
-  .canvas-wrap { position:relative;width:100%;max-width:640px;aspect-ratio:4/3;border:1.5px solid var(--border);border-radius:4px;overflow:hidden;background:#000; }
-  #videoEl { display:none; }
-  #overlayCanvas { position:absolute;inset:0;width:100%;height:100%;cursor:none; }
-  .status-bar { width:100%;max-width:640px;display:flex;align-items:center;gap:10px;font-family:monospace;font-size:12px;color:var(--muted);min-height:26px; }
-  .sdot { width:6px;height:6px;border-radius:50%;background:var(--muted);flex-shrink:0;transition:background 0.3s; }
-  .sdot.on { background:var(--accent);box-shadow:0 0 8px var(--accent); }
-  .controls { width:100%;max-width:640px;display:flex;align-items:center;gap:10px;flex-wrap:wrap; }
-  .glabel { font-size:11px;color:var(--muted);font-family:monospace;letter-spacing:0.5px; }
-  .gbtn { width:36px;height:36px;border:1.5px solid var(--border);background:transparent;color:var(--text);font-family:monospace;font-size:13px;cursor:pointer;border-radius:2px;transition:all 0.15s; }
-  .gbtn:hover,.gbtn.active { border-color:var(--accent);color:var(--accent); }
-  .gbtn.active { background:var(--accent-dim); }
-  .rbtn { margin-left:auto;padding:0 18px;height:36px;background:transparent;color:var(--muted);border:1px solid var(--border);font-size:12px;cursor:pointer;border-radius:2px;transition:all 0.15s; }
-  .rbtn:hover { border-color:var(--accent);color:var(--accent); }
-  .steps { width:100%;max-width:640px;display:grid;grid-template-columns:repeat(3,1fr);gap:10px; }
-  .step { border:1px solid var(--border);border-radius:3px;padding:12px;display:flex;flex-direction:column;gap:5px; }
-  .snum { font-family:monospace;font-size:10px;color:var(--accent);letter-spacing:1px; }
-  .stitle { font-size:13px;font-weight:600; }
-  .sdesc { font-size:11px;color:var(--muted);line-height:1.5; }
-  #solved { display:none;position:absolute;inset:0;background:rgba(0,0,0,0.88);align-items:center;justify-content:center;flex-direction:column;gap:14px;z-index:10; }
-  #solved.show { display:flex; }
-  .trophy { font-size:48px; }
-  .stitle2 { font-family:monospace;font-size:20px;color:var(--accent);text-shadow:0 0 20px var(--accent); }
-  .smoves { font-size:13px;color:var(--muted); }
-  .pagain { padding:10px 28px;background:var(--accent);color:#000;border:none;font-family:monospace;font-size:13px;font-weight:700;cursor:pointer;border-radius:2px;margin-top:6px; }
-  #loading { position:absolute;inset:0;background:#000;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;z-index:20;font-family:monospace;font-size:13px;color:var(--muted); }
-  .spin { width:28px;height:28px;border:2px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin 0.8s linear infinite; }
+  *{box-sizing:border-box;margin:0;padding:0}
+  :root{--bg:#0a0a0a;--border:#1e1e1e;--text:#f0f0f0;--muted:#555;--accent:#39ff14;--adim:rgba(57,255,20,0.10)}
+  body{background:var(--bg);color:var(--text);font-family:'Segoe UI',sans-serif;min-height:100vh;display:flex;flex-direction:column;align-items:center}
+  header{width:100%;max-width:960px;padding:24px 16px 18px;display:flex;align-items:center;gap:14px;border-bottom:1px solid var(--border);margin-bottom:28px}
+  .dot{width:8px;height:8px;border-radius:50%;background:var(--accent);box-shadow:0 0 10px var(--accent);flex-shrink:0}
+  h1{font-family:monospace;font-size:clamp(16px,3.5vw,22px);font-weight:700;letter-spacing:-0.5px}
+  .sub{margin-left:auto;font-size:12px;color:var(--muted);font-family:monospace}
+  main{width:100%;max-width:960px;padding:0 16px 60px;display:flex;flex-direction:column;align-items:center;gap:18px}
+  .wrap{position:relative;width:100%;max-width:640px;aspect-ratio:4/3;border:1.5px solid var(--border);border-radius:4px;overflow:hidden;background:#000}
+  #vid{display:none}
+  #cv{position:absolute;inset:0;width:100%;height:100%;cursor:none}
+  .sbar{width:100%;max-width:640px;display:flex;align-items:center;gap:10px;font-family:monospace;font-size:12px;color:var(--muted);min-height:26px}
+  .sd{width:6px;height:6px;border-radius:50%;background:var(--muted);flex-shrink:0;transition:background .3s}
+  .sd.on{background:var(--accent);box-shadow:0 0 8px var(--accent)}
+  .ctrl{width:100%;max-width:640px;display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+  .gl{font-size:11px;color:var(--muted);font-family:monospace;letter-spacing:.5px}
+  .gb{width:36px;height:36px;border:1.5px solid var(--border);background:transparent;color:var(--text);font-family:monospace;font-size:13px;cursor:pointer;border-radius:2px;transition:all .15s}
+  .gb:hover,.gb.on{border-color:var(--accent);color:var(--accent)}
+  .gb.on{background:var(--adim)}
+  .rb{margin-left:auto;padding:0 18px;height:36px;background:transparent;color:var(--muted);border:1px solid var(--border);font-size:12px;cursor:pointer;border-radius:2px;transition:all .15s}
+  .rb:hover{border-color:var(--accent);color:var(--accent)}
+  .steps{width:100%;max-width:640px;display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+  .step{border:1px solid var(--border);border-radius:3px;padding:12px;display:flex;flex-direction:column;gap:5px}
+  .sn{font-family:monospace;font-size:10px;color:var(--accent);letter-spacing:1px}
+  .st{font-size:13px;font-weight:600}
+  .sd2{font-size:11px;color:var(--muted);line-height:1.5}
+  #win{display:none;position:absolute;inset:0;background:rgba(0,0,0,.88);align-items:center;justify-content:center;flex-direction:column;gap:14px;z-index:10}
+  #win.show{display:flex}
+  .wt{font-family:monospace;font-size:20px;color:var(--accent);text-shadow:0 0 20px var(--accent)}
+  .wm{font-size:13px;color:var(--muted)}
+  .wa{padding:10px 28px;background:var(--accent);color:#000;border:none;font-family:monospace;font-size:13px;font-weight:700;cursor:pointer;border-radius:2px;margin-top:6px}
+  #ld{position:absolute;inset:0;background:#000;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;z-index:20;font-family:monospace;font-size:13px;color:var(--muted)}
+  .sp{width:28px;height:28px;border:2px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin .8s linear infinite}
   @keyframes spin{to{transform:rotate(360deg)}}
-  #tip { position:absolute;bottom:8px;left:0;right:0;text-align:center;font-family:monospace;font-size:11px;color:rgba(57,255,20,0.6);pointer-events:none;z-index:5; }
+  #tip{position:absolute;bottom:8px;left:0;right:0;text-align:center;font-family:monospace;font-size:11px;color:rgba(57,255,20,.6);pointer-events:none;z-index:5}
 </style>
 </head>
 <body>
-<header>
-  <div class="dot"></div>
-  <h1>LIVE PUZZLE</h1>
-  <span class="subtitle">hand gesture control</span>
-</header>
+<header><div class="dot"></div><h1>LIVE PUZZLE</h1><span class="sub">hand gesture control</span></header>
 <main>
-  <div class="canvas-wrap">
-    <video id="videoEl" playsinline></video>
-    <canvas id="overlayCanvas"></canvas>
-    <div id="solved">
-      <div class="trophy">🏆</div>
-      <div class="stitle2">PUZZLE COMPLETE</div>
-      <div class="smoves" id="smoves"></div>
-      <button class="pagain" onclick="resetPuzzle()">PLAY AGAIN</button>
+  <div class="wrap">
+    <video id="vid" playsinline></video>
+    <canvas id="cv"></canvas>
+    <div id="win">
+      <div style="font-size:48px">🏆</div>
+      <div class="wt">PUZZLE COMPLETE</div>
+      <div class="wm" id="wm"></div>
+      <button class="wa" onclick="resetPuzzle()">PLAY AGAIN</button>
     </div>
-    <div id="loading">
-      <div class="spin"></div>
-      <span id="ltxt">Starting camera...</span>
-    </div>
+    <div id="ld"><div class="sp"></div><span id="lt">Starting camera...</span></div>
     <div id="tip"></div>
   </div>
-  <div class="status-bar">
-    <div class="sdot" id="sdot"></div>
-    <span id="stxt">Initializing...</span>
-    <span id="moves" style="font-family:monospace;color:var(--text);margin-left:auto;"></span>
-  </div>
-  <div class="controls">
-    <span class="glabel">GRID</span>
-    <button class="gbtn active" onclick="setGrid(3,this)">3</button>
-    <button class="gbtn" onclick="setGrid(4,this)">4</button>
-    <button class="gbtn" onclick="setGrid(5,this)">5</button>
-    <button class="rbtn" onclick="resetPuzzle()">↺ Reset</button>
+  <div class="sbar"><div class="sd" id="sd"></div><span id="st">Initializing...</span><span id="mv" style="font-family:monospace;color:var(--text);margin-left:auto"></span></div>
+  <div class="ctrl">
+    <span class="gl">GRID</span>
+    <button class="gb on" onclick="setGrid(3,this)">3</button>
+    <button class="gb" onclick="setGrid(4,this)">4</button>
+    <button class="gb" onclick="setGrid(5,this)">5</button>
+    <button class="rb" onclick="resetPuzzle()">↺ Reset</button>
   </div>
   <div class="steps">
-    <div class="step"><span class="snum">01 — FRAME</span><div class="stitle">Show both hands</div><div class="sdesc">Hold both hands up to frame the area you want to capture.</div></div>
-    <div class="step"><span class="snum">02 — CAPTURE</span><div class="stitle">Pinch to capture</div><div class="sdesc">Touch thumb to index finger to snap the framed image into a puzzle.</div></div>
-    <div class="step"><span class="snum">03 — SOLVE</span><div class="stitle">Drag to swap</div><div class="sdesc">Pinch over a piece to grab it, move hand, open fingers to drop.</div></div>
+    <div class="step"><span class="sn">01 — FRAME</span><div class="st">Show both hands</div><div class="sd2">Hold both hands up to frame what you want to capture.</div></div>
+    <div class="step"><span class="sn">02 — CAPTURE</span><div class="st">Pinch to snap</div><div class="sd2">Touch thumb to index finger to cut into puzzle pieces.</div></div>
+    <div class="step"><span class="sn">03 — SOLVE</span><div class="st">Drag to swap</div><div class="sd2">Pinch a piece, move hand, open fingers to drop.</div></div>
   </div>
 </main>
 
+<!-- Load MediaPipe Hands only (no Camera util needed) -->
 <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands@0.4.1646424915/hands.js" crossorigin="anonymous"></script>
-<script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils@0.3.1620248257/camera_utils.js" crossorigin="anonymous"></script>
 
 <script>
-const video   = document.getElementById('videoEl');
-const canvas  = document.getElementById('overlayCanvas');
-const ctx     = canvas.getContext('2d');
-const loading = document.getElementById('loading');
-const ltxt    = document.getElementById('ltxt');
-const sdot    = document.getElementById('sdot');
-const stxt    = document.getElementById('stxt');
-const movesEl = document.getElementById('moves');
-const solved  = document.getElementById('solved');
-const smoves  = document.getElementById('smoves');
-const tip     = document.getElementById('tip');
+const vid=document.getElementById('vid'),cv=document.getElementById('cv'),ctx=cv.getContext('2d');
+const ld=document.getElementById('ld'),lt=document.getElementById('lt');
+const sd=document.getElementById('sd'),st=document.getElementById('st'),mv=document.getElementById('mv');
+const win=document.getElementById('win'),wm=document.getElementById('wm'),tip=document.getElementById('tip');
 
-let gridSize = 3, phase = 'capture';
-let capturedImage = null, pieces = [], order = [], moveCount = 0;
-let lmData = [];  // [{x,y}] per hand
-let dragging = false, dragPos = null, cooldown = 0;
-let CW = 640, CH = 480;
+let gridSize=3,phase='capture',capturedImage=null,pieces=[],order=[],moveCount=0;
+let lmData=[],dragging=false,dragPos=null,cool=0;
+let CW=640,CH=480,running=false;
 
-function resize() {
-  const w = canvas.parentElement;
-  CW = w.clientWidth; CH = w.clientHeight;
-  canvas.width = CW; canvas.height = CH;
-}
-resize(); window.addEventListener('resize', resize);
+function resize(){const w=cv.parentElement;CW=w.clientWidth;CH=w.clientHeight;cv.width=CW;cv.height=CH;}
+resize();window.addEventListener('resize',resize);
 
-window.setGrid = (n, btn) => {
-  gridSize = n;
-  document.querySelectorAll('.gbtn').forEach(b => b.classList.remove('active'));
-  btn.classList.add('active');
-  if (phase === 'solve') resetPuzzle();
-};
+window.setGrid=(n,btn)=>{gridSize=n;document.querySelectorAll('.gb').forEach(b=>b.classList.remove('on'));btn.classList.add('on');if(phase==='solve')resetPuzzle();};
+window.resetPuzzle=()=>{win.classList.remove('show');if(capturedImage)buildPuzzle(capturedImage);else{phase='capture';pieces=[];order=[];moveCount=0;updateUI();}};
 
-window.resetPuzzle = () => {
-  solved.classList.remove('show');
-  if (capturedImage) buildPuzzle(capturedImage);
-  else { phase='capture'; pieces=[]; order=[]; moveCount=0; updateUI(); }
-};
-
-function buildPuzzle(img) {
-  capturedImage = img; phase = 'solve'; moveCount = 0; movesEl.textContent = 'moves: 0';
-  const n=gridSize, pw=img.width/n, ph=img.height/n;
-  pieces = [];
-  for (let r=0;r<n;r++) for (let c=0;c<n;c++) {
-    const oc=document.createElement('canvas'); oc.width=pw; oc.height=ph;
-    oc.getContext('2d').drawImage(img,c*pw,r*ph,pw,ph,0,0,pw,ph);
-    pieces.push(oc);
+function buildPuzzle(img){
+  capturedImage=img;phase='solve';moveCount=0;mv.textContent='moves: 0';
+  const n=gridSize,pw=img.width/n,ph=img.height/n;pieces=[];
+  for(let r=0;r<n;r++)for(let c=0;c<n;c++){
+    const oc=document.createElement('canvas');oc.width=pw;oc.height=ph;
+    oc.getContext('2d').drawImage(img,c*pw,r*ph,pw,ph,0,0,pw,ph);pieces.push(oc);
   }
-  order = pieces.map((_,i)=>i);
-  for (let i=order.length-1;i>0;i--) { const j=Math.floor(Math.random()*(i+1)); [order[i],order[j]]=[order[j],order[i]]; }
-  dragging=false; dragPos=null;
-  updateUI();
+  order=pieces.map((_,i)=>i);
+  for(let i=order.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[order[i],order[j]]=[order[j],order[i]];}
+  dragging=false;dragPos=null;updateUI();
 }
 
-function updateUI() {
-  sdot.classList.toggle('on', phase==='solve');
-  stxt.textContent = phase==='capture'
-    ? 'Show both hands → frame area → pinch to capture'
-    : 'Pinch to grab a piece · open hand to drop';
-  if (phase==='capture') movesEl.textContent='';
+function updateUI(){
+  sd.classList.toggle('on',phase==='solve');
+  st.textContent=phase==='capture'?'Show both hands → frame area → pinch to capture':'Pinch to grab · open to drop';
+  if(phase==='capture')mv.textContent='';
 }
 
-function checkSolved() {
-  if (order.every((v,i)=>v===i)) {
-    smoves.textContent = `Solved in ${moveCount} moves`;
-    solved.classList.add('show');
-  }
-}
+function checkSolved(){if(order.every((v,i)=>v===i)){wm.textContent=`Solved in ${moveCount} moves`;win.classList.add('show');}}
 
-// Pinch = thumb tip (4) close to index tip (8)
-function pinched(lm) {
-  return Math.hypot(lm[4].x-lm[8].x, lm[4].y-lm[8].y) < 35;
-}
+function pinched(lm){return Math.hypot(lm[4].x-lm[8].x,lm[4].y-lm[8].y)<35;}
 
-// ── MediaPipe Hands ──
-const hands = new Hands({ locateFile: f => `https://cdn.jsdelivr.net/npm/@mediapipe/hands@0.4.1646424915/${f}` });
-hands.setOptions({ maxNumHands:2, modelComplexity:1, minDetectionConfidence:0.7, minTrackingConfidence:0.6 });
+// Setup MediaPipe
+const hands=new Hands({locateFile:f=>`https://cdn.jsdelivr.net/npm/@mediapipe/hands@0.4.1646424915/${f}`});
+hands.setOptions({maxNumHands:2,modelComplexity:1,minDetectionConfidence:0.7,minTrackingConfidence:0.6});
+hands.onResults(onResults);
 
-hands.onResults(res => {
+function onResults(res){
   resize();
-  // Draw mirrored camera
-  ctx.save(); ctx.translate(CW,0); ctx.scale(-1,1);
+  ctx.save();ctx.translate(CW,0);ctx.scale(-1,1);
   ctx.drawImage(res.image,0,0,CW,CH);
   ctx.restore();
+  lmData=(res.multiHandLandmarks||[]).map(h=>h.map(p=>({x:(1-p.x)*CW,y:p.y*CH})));
+  if(cool>0)cool--;
+  phase==='capture'?doCapture():doSolve();
+}
 
-  // Convert normalized → pixel, mirror x
-  lmData = (res.multiHandLandmarks||[]).map(hand =>
-    hand.map(p => ({ x:(1-p.x)*CW, y:p.y*CH }))
-  );
-
-  if (cooldown>0) cooldown--;
-  phase==='capture' ? doCapture() : doSolve();
-});
-
-function doCapture() {
+function doCapture(){
   const A='#39ff14';
-  for (const lm of lmData) drawSkel(lm, A);
-
-  if (lmData.length >= 2) {
-    tip.textContent = '';
-    const all = lmData.flat();
-    const xs=all.map(p=>p.x), ys=all.map(p=>p.y);
-    const rx=Math.min(...xs), ry=Math.min(...ys);
-    const rw=Math.max(...xs)-rx, rh=Math.max(...ys)-ry;
-
-    ctx.strokeStyle='#b4ff6e'; ctx.lineWidth=2;
-    ctx.setLineDash([6,4]); ctx.strokeRect(rx,ry,rw,rh); ctx.setLineDash([]);
-    ctx.fillStyle='#b4ff6e'; ctx.font='bold 12px monospace';
-    ctx.fillText('PINCH TO CAPTURE', rx+6, Math.max(ry-6,14));
-
-    if (lmData.some(lm=>pinched(lm)) && cooldown===0 && rw>30 && rh>30) {
-      const cap=document.createElement('canvas'); cap.width=rw; cap.height=rh;
-      cap.getContext('2d').drawImage(canvas,rx,ry,rw,rh,0,0,rw,rh);
-      buildPuzzle(cap); cooldown=40;
+  for(const lm of lmData)drawSkel(lm,A);
+  if(lmData.length>=2){
+    tip.textContent='';
+    const all=lmData.flat(),xs=all.map(p=>p.x),ys=all.map(p=>p.y);
+    const rx=Math.min(...xs),ry=Math.min(...ys),rw=Math.max(...xs)-rx,rh=Math.max(...ys)-ry;
+    ctx.strokeStyle='#b4ff6e';ctx.lineWidth=2;ctx.setLineDash([6,4]);ctx.strokeRect(rx,ry,rw,rh);ctx.setLineDash([]);
+    ctx.fillStyle='#b4ff6e';ctx.font='bold 12px monospace';ctx.fillText('PINCH TO CAPTURE',rx+6,Math.max(ry-6,14));
+    if(lmData.some(lm=>pinched(lm))&&cool===0&&rw>30&&rh>30){
+      const cap=document.createElement('canvas');cap.width=rw;cap.height=rh;
+      cap.getContext('2d').drawImage(cv,rx,ry,rw,rh,0,0,rw,rh);
+      buildPuzzle(cap);cool=40;
     }
   } else {
-    tip.textContent = lmData.length===1 ? 'Show your OTHER hand too' : 'Show BOTH hands to frame';
+    tip.textContent=lmData.length===1?'Show your OTHER hand too':'Show BOTH hands to frame the area';
   }
 }
 
-function doSolve() {
-  const n=gridSize, pw=CW/n, ph=CH/n, A='#39ff14';
-
-  for (let pos=0;pos<n*n;pos++) {
-    const col=pos%n, row=Math.floor(pos/n), x=col*pw, y=row*ph;
-    if (dragging && dragPos===pos) ctx.globalAlpha=0.25;
+function doSolve(){
+  const n=gridSize,pw=CW/n,ph=CH/n,A='#39ff14';
+  for(let pos=0;pos<n*n;pos++){
+    const col=pos%n,row=Math.floor(pos/n),x=col*pw,y=row*ph;
+    if(dragging&&dragPos===pos)ctx.globalAlpha=0.25;
     ctx.drawImage(pieces[order[pos]],x,y,pw,ph);
-    ctx.globalAlpha=1;
-    ctx.strokeStyle='#222'; ctx.lineWidth=1.5; ctx.strokeRect(x,y,pw,ph);
+    ctx.globalAlpha=1;ctx.strokeStyle='#222';ctx.lineWidth=1.5;ctx.strokeRect(x,y,pw,ph);
   }
-
-  if (lmData.length===0) tip.textContent='Show your hand to play';
-  else tip.textContent='';
-
-  for (const lm of lmData) {
-    const p=pinched(lm), ix=lm[8].x, iy=lm[8].y;
-
-    if (dragging && dragPos!==null) {
-      if (p) {
-        ctx.save(); ctx.shadowColor=A; ctx.shadowBlur=20; ctx.globalAlpha=0.93;
+  tip.textContent=lmData.length===0?'Show your hand to play':'';
+  for(const lm of lmData){
+    const p=pinched(lm),ix=lm[8].x,iy=lm[8].y;
+    if(dragging&&dragPos!==null){
+      if(p){
+        ctx.save();ctx.shadowColor=A;ctx.shadowBlur=20;ctx.globalAlpha=0.93;
         ctx.drawImage(pieces[order[dragPos]],ix-pw/2,iy-ph/2,pw,ph);
-        ctx.globalAlpha=1; ctx.strokeStyle=A; ctx.lineWidth=2.5;
-        ctx.strokeRect(ix-pw/2,iy-ph/2,pw,ph); ctx.restore();
-      } else if (cooldown===0) {
-        const dc=Math.floor(ix/pw), dr=Math.floor(iy/ph), dp=dr*n+dc;
-        if (dp>=0&&dp<n*n&&dp!==dragPos) {
-          [order[dragPos],order[dp]]=[order[dp],order[dragPos]];
-          moveCount++; movesEl.textContent=`moves: ${moveCount}`; checkSolved();
-        }
-        dragging=false; dragPos=null; cooldown=18;
+        ctx.globalAlpha=1;ctx.strokeStyle=A;ctx.lineWidth=2.5;ctx.strokeRect(ix-pw/2,iy-ph/2,pw,ph);ctx.restore();
+      } else if(cool===0){
+        const dp=Math.floor(iy/ph)*n+Math.floor(ix/pw);
+        if(dp>=0&&dp<n*n&&dp!==dragPos){[order[dragPos],order[dp]]=[order[dp],order[dragPos]];moveCount++;mv.textContent=`moves: ${moveCount}`;checkSolved();}
+        dragging=false;dragPos=null;cool=18;
       }
     } else {
-      if (p && !dragging && cooldown===0) {
-        const pos=Math.floor(iy/ph)*n+Math.floor(ix/pw);
-        if (pos>=0&&pos<n*n) { dragging=true; dragPos=pos; cooldown=18; }
-      }
-      const hc=Math.floor(ix/pw), hr=Math.floor(iy/ph);
-      if (!dragging&&hc>=0&&hc<n&&hr>=0&&hr<n) {
-        ctx.strokeStyle='rgba(57,255,20,0.35)'; ctx.lineWidth=2;
-        ctx.strokeRect(hc*pw,hr*ph,pw,ph);
-      }
+      if(p&&!dragging&&cool===0){const pos=Math.floor(iy/ph)*n+Math.floor(ix/pw);if(pos>=0&&pos<n*n){dragging=true;dragPos=pos;cool=18;}}
+      const hc=Math.floor(ix/pw),hr=Math.floor(iy/ph);
+      if(!dragging&&hc>=0&&hc<n&&hr>=0&&hr<n){ctx.strokeStyle='rgba(57,255,20,.35)';ctx.lineWidth=2;ctx.strokeRect(hc*pw,hr*ph,pw,ph);}
     }
-
-    drawSkel(lm, p?A:'rgba(57,255,20,0.55)');
-    ctx.beginPath(); ctx.arc(ix,iy,p?11:6,0,Math.PI*2);
-    ctx.fillStyle=p?A:'rgba(57,255,20,0.4)';
-    if(p){ctx.shadowColor=A;ctx.shadowBlur=14;}
-    ctx.fill(); ctx.shadowBlur=0;
+    drawSkel(lm,p?A:'rgba(57,255,20,.55)');
+    ctx.beginPath();ctx.arc(ix,iy,p?11:6,0,Math.PI*2);
+    ctx.fillStyle=p?A:'rgba(57,255,20,.4)';
+    if(p){ctx.shadowColor=A;ctx.shadowBlur=14;}ctx.fill();ctx.shadowBlur=0;
   }
 }
 
 const CONN=[[0,1],[1,2],[2,3],[3,4],[0,5],[5,6],[6,7],[7,8],[0,9],[9,10],[10,11],[11,12],[0,13],[13,14],[14,15],[15,16],[0,17],[17,18],[18,19],[19,20],[5,9],[9,13],[13,17]];
-function drawSkel(lm,color) {
-  ctx.strokeStyle=color; ctx.lineWidth=1.5;
+function drawSkel(lm,color){
+  ctx.strokeStyle=color;ctx.lineWidth=1.5;
   for(const[a,b]of CONN){ctx.beginPath();ctx.moveTo(lm[a].x,lm[a].y);ctx.lineTo(lm[b].x,lm[b].y);ctx.stroke();}
   for(const p of lm){ctx.beginPath();ctx.arc(p.x,p.y,3,0,Math.PI*2);ctx.fillStyle=color;ctx.fill();}
 }
 
-// ── Start camera ──
-ltxt.textContent = 'Requesting camera...';
-navigator.mediaDevices.getUserMedia({ video:{width:640,height:480,facingMode:'user'} })
-  .then(stream => {
-    video.srcObject = stream;
-    video.play();
-    ltxt.textContent = 'Loading hand model (first load ~5s)...';
-    const cam = new Camera(video, {
-      onFrame: async () => { await hands.send({image:video}); },
-      width:640, height:480
-    });
-    hands.initialize().then(() => {
-      loading.style.display='none';
+// Use requestAnimationFrame loop instead of Camera util
+async function tick(){
+  if(vid.readyState>=2){
+    try{await hands.send({image:vid});}catch(e){}
+  }
+  requestAnimationFrame(tick);
+}
+
+// Start
+lt.textContent='Requesting camera access...';
+navigator.mediaDevices.getUserMedia({video:{width:640,height:480,facingMode:'user'}})
+  .then(stream=>{
+    vid.srcObject=stream;
+    vid.play();
+    lt.textContent='Loading hand model... (may take ~10s first time)';
+    // Wait for hands to be ready then hide loader
+    hands.initialize().then(()=>{
+      ld.style.display='none';
       updateUI();
-      cam.start();
-    }).catch(e => { ltxt.textContent='❌ Model load failed: '+e.message; });
+      tick();
+    }).catch(e=>{lt.textContent='❌ Model error: '+e.message;});
   })
-  .catch(e => { ltxt.textContent='❌ Camera error: '+e.message; });
+  .catch(e=>{lt.textContent='❌ '+e.message;});
 </script>
 </body>
 </html>
